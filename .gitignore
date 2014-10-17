@@ -1,0 +1,5 @@
+build
+node_modules
+.tscache
+.idea
+.DS_Store

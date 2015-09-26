@@ -1,0 +1,26 @@
+{
+    "version": "1.6.2",
+    "compilerOptions": {
+        "target": "es5",
+        "declaration": true,
+        "noLib": false,
+        "preserveConstEnums": true,
+        "out": "../demo/lib/frost.js"
+    },
+    "filesGlob": [
+        "./**/*.ts"
+    ],
+    "files": [
+        "./assetManager.ts",
+        "./event.ts",
+        "./frost.ts",
+        "./routing/history.ts",
+        "./routing/matcher.ts",
+        "./routing/navigation.ts",
+        "./routing/route.ts",
+        "./typed/es6.d.ts",
+        "./typed/knockout.d.ts",
+        "./view/view.ts",
+        "./viewmodel.ts"
+    ]
+}

@@ -1,0 +1,18 @@
+{
+    "version": "1.6.2",
+    "compilerOptions": {
+        "target": "es5",
+        "out": "build/demo.js"
+    },
+    "filesGlob": [
+        "./**/*.ts"
+    ],
+    "files": [
+        "./lib/es6.d.ts",
+        "./lib/frost.d.ts",
+        "./lib/knockout.d.ts",
+        "./src/index/indexPage.ts",
+        "./src/main.ts",
+        "./src/settings/settings.ts"
+    ]
+}

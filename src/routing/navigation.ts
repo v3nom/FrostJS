@@ -11,6 +11,11 @@ module Frost.Routing {
             nextView.prepareForRender().then(() => {
                 if (activeView) {
                     activeView.removeFromDOM();
+                }else{
+                  // Clean body first
+                  while (document.body.firstChild) {
+                    document.body.removeChild(document.body.firstChild);
+                  }
                 }
                 activeView = nextView;
                 activeView.renderToDOM(document.body);

@@ -67,6 +67,12 @@ var Frost;
 (function (Frost) {
     Frost.Events = new Frost.EventHub();
     function init() {
+        ko.bindingHandlers['stopBinding'] = {
+            init: function () {
+                return { controlsDescendantBindings: true };
+            }
+        };
+        ko.virtualElements.allowedBindings['stopBinding'] = true;
         Frost.Routing.startTracking();
     }
     Frost.init = init;
@@ -135,6 +141,12 @@ var Frost;
                     if (activeView) {
                         activeView.removeFromDOM();
                     }
+                    else {
+                        // Clean body first
+                        while (document.body.firstChild) {
+                            document.body.removeChild(document.body.firstChild);
+                        }
+                    }
                     activeView = nextView;
                     activeView.renderToDOM(document.body);
                 });
@@ -164,28 +176,71 @@ var Frost;
 (function (Frost) {
     var View = (function () {
         function View(viewPath, viewModelConstructor, subViews) {
+            var _this = this;
+            this.sectionName = '_top_';
             this.viewPath = viewPath;
             this.viewModelConstructor = viewModelConstructor;
+            this._subViews = [];
+            if (subViews) {
+                Object.keys(subViews).forEach(function (sectionName) {
+                    if (sectionName != '_') {
+                        var v = subViews[sectionName];
+                        v.sectionName = sectionName;
+                        _this._subViews.push(v);
+                    }
+                    else {
+                        var vs = subViews['_'];
+                        vs.forEach(function (globalView) {
+                            globalView.sectionName = '_';
+                            _this._subViews.push(globalView);
+                        });
+                    }
+                });
+            }
         }
         View.prototype.prepareForRender = function () {
             var _this = this;
             this._viewModelInstance = new this.viewModelConstructor();
+            var subViewAssets = this._subViews.map(function (subView) {
+                return subView.prepareForRender();
+            });
             return Frost.AssetManager.getAsset(this.viewPath).then(function (asset) {
                 _this._viewContent = asset;
+                return Promise.all(subViewAssets);
             });
         };
-        View.prototype.renderToDOM = function (parent, sectionName) {
-            this._parent = parent;
-            var fragment = document.createRange().createContextualFragment(this._viewContent);
-            while (parent.firstChild) {
-                parent.removeChild(parent.firstChild);
+        View.prototype.renderToDOM = function (parent, top) {
+            // Create view fragment
+            var range = document.createRange();
+            range.setStart(document.body, 0);
+            var fragment = range.createContextualFragment(this._viewContent);
+            var holder = null;
+            // find out holder
+            if (this.sectionName == '_') {
+                holder = top.children[0];
             }
-            parent.appendChild(fragment);
-            ko.applyBindings(this._viewModelInstance, parent);
+            else if (this.sectionName == '_top_') {
+                holder = parent;
+                top = fragment;
+            }
+            else {
+                holder = parent.querySelector('[data-frost-view="' + this.sectionName + '"]');
+                var koStartComment = document.createComment('ko stopBinding: true');
+                var koEndComment = document.createComment('/ko');
+                holder.parentElement.insertBefore(koStartComment, holder);
+                holder.parentElement.insertBefore(koEndComment, holder.nextSibling);
+            }
+            // Render sub views first
+            this._subViews.forEach(function (subView) {
+                subView.renderToDOM(fragment, top);
+            });
+            // Insert self to parent
+            holder.appendChild(fragment);
+            //  ko.applyBindings(this._viewModelInstance, holder);this.sectionName=='_'?holder.childNodes[0]:holder;
         };
         View.prototype.removeFromDOM = function () {
-            ko.cleanNode(this._parent);
-            this._parent = null;
+            //ko.cleanNode(this._holderElement);
+            this._holderElement = null;
             this._viewModelInstance = null;
         };
         View.prototype.isSame = function (v) {

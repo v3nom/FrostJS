@@ -48,7 +48,6 @@ declare module Frost {
         private _viewContent;
         private _subViews;
         private _viewModelInstance;
-        private _holderElement;
         constructor(viewPath: string, viewModelConstructor: Function, subViews?: any);
         prepareForRender(): any;
         renderToDOM(parent: Element | DocumentFragment, top?: any): void;

@@ -218,6 +218,10 @@ var Frost;
             // find out holder
             if (this.sectionName == '_') {
                 holder = top.children[0];
+                var koStartComment = document.createComment('ko stopBinding: true');
+                var koEndComment = document.createComment('/ko');
+                fragment.insertBefore(koStartComment, fragment.childNodes[0]);
+                fragment.appendChild(koEndComment);
             }
             else if (this.sectionName == '_top_') {
                 holder = parent;
@@ -225,10 +229,15 @@ var Frost;
             }
             else {
                 holder = parent.querySelector('[data-frost-view="' + this.sectionName + '"]');
-                var koStartComment = document.createComment('ko stopBinding: true');
-                var koEndComment = document.createComment('/ko');
-                holder.parentElement.insertBefore(koStartComment, holder);
-                holder.parentElement.insertBefore(koEndComment, holder.nextSibling);
+                var existingBindings = holder.dataset.bind;
+                var stopBinding = 'stopBinding: true';
+                if (existingBindings) {
+                    existingBindings += ',' + stopBinding;
+                }
+                else {
+                    existingBindings = stopBinding;
+                }
+                holder.dataset.bind = existingBindings;
             }
             // Render sub views first
             this._subViews.forEach(function (subView) {
@@ -236,12 +245,21 @@ var Frost;
             });
             // Insert self to parent
             holder.appendChild(fragment);
-            //  ko.applyBindings(this._viewModelInstance, holder);this.sectionName=='_'?holder.childNodes[0]:holder;
+            // Apply bindings
+            if (this.sectionName == '_' || this.sectionName == '_top_') {
+                ko.applyBindings(this._viewModelInstance, holder.lastElementChild);
+            }
+            else {
+                ko.applyBindingsToDescendants(this._viewModelInstance, holder);
+            }
         };
         View.prototype.removeFromDOM = function () {
-            //ko.cleanNode(this._holderElement);
-            this._holderElement = null;
             this._viewModelInstance = null;
+            if (this.sectionName == '_top_') {
+                while (document.body.firstElementChild) {
+                    ko.removeNode(document.body.firstElementChild);
+                }
+            }
         };
         View.prototype.isSame = function (v) {
             return v.viewPath == this.viewPath && v.viewModelConstructor == this.viewModelConstructor;

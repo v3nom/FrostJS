@@ -1,7 +1,13 @@
-module App.Page.Index{
+module App.Page.Index {
   export class Content extends Frost.Section {
-      constructor(){
-        super();
-      }
+    content = ko.observable('Contento2');
+
+    constructor() {
+      super();
+    }
+
+    openSettings = () => {
+      Frost.Routing.navigate('settings', null);
+    }
   }
 }

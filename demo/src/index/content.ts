@@ -9,5 +9,12 @@ module App.Page.Index {
     openSettings = () => {
       Frost.Routing.navigate('settings', null);
     }
+
+    sectionCreate(){
+      console.log('content section create');
+    }
+    sectionRemove(){
+      console.log('content section remove');
+    }
   }
 }

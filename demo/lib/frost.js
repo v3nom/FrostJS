@@ -243,6 +243,7 @@ var Frost;
             this._subViews.forEach(function (subView) {
                 subView.renderToDOM(fragment, top);
             });
+            this._viewModelInstance.sectionCreate();
             // Insert self to parent
             holder.appendChild(fragment);
             // Apply bindings
@@ -254,12 +255,16 @@ var Frost;
             }
         };
         View.prototype.removeFromDOM = function () {
+            this._viewModelInstance.sectionRemove();
             this._viewModelInstance = null;
             if (this.sectionName == '_top_') {
                 while (document.body.firstElementChild) {
                     ko.removeNode(document.body.firstElementChild);
                 }
             }
+            this._subViews.forEach(function (v) {
+                v.removeFromDOM();
+            });
         };
         View.prototype.isSame = function (v) {
             return v.viewPath == this.viewPath && v.viewModelConstructor == this.viewModelConstructor;
@@ -273,10 +278,6 @@ var Frost;
     var Section = (function () {
         function Section() {
         }
-        Section.prototype.sectionShow = function () {
-        };
-        Section.prototype.sectionHide = function () {
-        };
         Section.prototype.sectionCreate = function () {
         };
         Section.prototype.sectionRemove = function () {

@@ -57,8 +57,6 @@ declare module Frost {
 }
 declare module Frost {
     class Section {
-        sectionShow(): void;
-        sectionHide(): void;
         sectionCreate(): void;
         sectionRemove(): void;
     }

@@ -6,7 +6,6 @@ module Frost {
     private _viewContent: string;
     private _subViews: View[];
     private _viewModelInstance: Section;
-    private _holderElement: Element | DocumentFragment;
 
     constructor(viewPath: string, viewModelConstructor: Function, subViews?: any) {
       this.viewPath = viewPath;
@@ -50,15 +49,23 @@ module Frost {
       // find out holder
       if (this.sectionName == '_') {
         holder = top.children[0];
+        var koStartComment = document.createComment('ko stopBinding: true');
+        var koEndComment = document.createComment('/ko');
+        fragment.insertBefore(koStartComment, fragment.childNodes[0]);
+        fragment.appendChild(koEndComment);
       } else if (this.sectionName == '_top_') {
         holder = parent;
         top = fragment;
       } else {
         holder = parent.querySelector('[data-frost-view="' + this.sectionName + '"]');
-        var koStartComment = document.createComment('ko stopBinding: true');
-        var koEndComment = document.createComment('/ko');
-        holder.parentElement.insertBefore(koStartComment, holder);
-        holder.parentElement.insertBefore(koEndComment, holder.nextSibling);
+        var existingBindings = holder.dataset.bind;
+        var stopBinding = 'stopBinding: true';
+        if (existingBindings) {
+          existingBindings += ',' + stopBinding;
+        } else {
+          existingBindings = stopBinding;
+        }
+        holder.dataset.bind = existingBindings;
       }
 
       // Render sub views first
@@ -66,15 +73,30 @@ module Frost {
         subView.renderToDOM(fragment, top);
       });
 
+      this._viewModelInstance.sectionCreate();
+
       // Insert self to parent
       holder.appendChild(fragment);
-      //  ko.applyBindings(this._viewModelInstance, holder);this.sectionName=='_'?holder.childNodes[0]:holder;
+
+      // Apply bindings
+      if (this.sectionName == '_' || this.sectionName == '_top_') {
+        ko.applyBindings(this._viewModelInstance, holder.lastElementChild);
+      } else {
+        ko.applyBindingsToDescendants(this._viewModelInstance, holder);
+      }
     }
 
     removeFromDOM() {
-      //ko.cleanNode(this._holderElement);
-      this._holderElement = null;
+      this._viewModelInstance.sectionRemove();
       this._viewModelInstance = null;
+      if(this.sectionName=='_top_'){
+        while(document.body.firstElementChild){
+          ko.removeNode(document.body.firstElementChild);
+        }
+      }
+      this._subViews.forEach((v)=>{
+        v.removeFromDOM();
+      });
     }
 
     isSame(v: View) {

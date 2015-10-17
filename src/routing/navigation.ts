@@ -5,9 +5,9 @@ module Frost.Routing {
         var nextRoute: Routing.Route = Frost.Routing.matchRoute(data.hash);
         if (nextRoute) {
             var nextView = nextRoute.action();
-            if (activeView && nextView.isSame(activeView)) {
+            /*if (activeView && nextView.isSame(activeView)) {
                 return;
-            }
+            }*/
             nextView.prepareForRender().then(() => {
                 if (activeView) {
                     activeView.removeFromDOM();

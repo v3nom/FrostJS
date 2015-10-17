@@ -1,13 +1,17 @@
 module Frost {
+  var runningCounter = 1;
+
   export class View {
     viewPath: string;
     viewModelConstructor: any;
     sectionName = '_top_';
+    private _id;
     private _viewContent: string;
     private _subViews: View[];
     private _viewModelInstance: Section;
 
     constructor(viewPath: string, viewModelConstructor: Function, subViews?: any) {
+      this._id = runningCounter++;
       this.viewPath = viewPath;
       this.viewModelConstructor = viewModelConstructor;
       this._subViews = [];
@@ -20,7 +24,7 @@ module Frost {
           } else {
             var vs = subViews['_'];
             vs.forEach((globalView) => {
-              globalView.sectionName = '_';
+              globalView.sectionName = 'external' + globalView._id;
               this._subViews.push(globalView);
             });
           }
@@ -39,23 +43,20 @@ module Frost {
       });
     }
 
-    renderToDOM(parent: Element|DocumentFragment, top?) {
+    renderToDOM(parent: HTMLElement) {
       // Create view fragment
-      var range = document.createRange();
-      range.setStart(document.body, 0);
-      var fragment = range.createContextualFragment(this._viewContent);
-
-      var holder = null;
+      var content = this._viewContent;
+      var holder: any = null;
       // find out holder
-      if (this.sectionName == '_') {
-        holder = top.children[0];
-        var koStartComment = document.createComment('ko stopBinding: true');
-        var koEndComment = document.createComment('/ko');
-        fragment.insertBefore(koStartComment, fragment.childNodes[0]);
-        fragment.appendChild(koEndComment);
+      if (this.sectionName.indexOf('external') == 0) {
+        content = '<!-- ko stopBinding: true -->' + content + '<!-- /ko -->';
+        holder = parent.childNodes[0];
+        holder.innerHTML += content;
+        holder.lastElementChild.dataset.frostView = this.sectionName;
       } else if (this.sectionName == '_top_') {
-        holder = parent;
-        top = fragment;
+        parent.innerHTML = content;
+        holder = parent.firstChild;
+        holder.dataset['frostView'] = this.sectionName;
       } else {
         holder = parent.querySelector('[data-frost-view="' + this.sectionName + '"]');
         var existingBindings = holder.dataset.bind;
@@ -66,35 +67,34 @@ module Frost {
           existingBindings = stopBinding;
         }
         holder.dataset.bind = existingBindings;
+        holder.innerHTML = content;
       }
 
       // Render sub views first
       this._subViews.forEach((subView) => {
-        subView.renderToDOM(fragment, top);
+        subView.renderToDOM(parent);
       });
 
       this._viewModelInstance.sectionCreate();
-
-      // Insert self to parent
-      holder.appendChild(fragment);
-
-      // Apply bindings
-      if (this.sectionName == '_' || this.sectionName == '_top_') {
-        ko.applyBindings(this._viewModelInstance, holder.lastElementChild);
-      } else {
-        ko.applyBindingsToDescendants(this._viewModelInstance, holder);
-      }
+      setTimeout(() => {
+        var target = document.querySelector('[data-frost-view="' + this.sectionName + '"]');
+        if (this.sectionName == '_top_' || this.sectionName.indexOf('external') == 0) {
+          ko.applyBindings(this._viewModelInstance, target);
+        } else {
+          ko.applyBindingsToDescendants(this._viewModelInstance, target);
+        }
+      });
     }
 
     removeFromDOM() {
       this._viewModelInstance.sectionRemove();
       this._viewModelInstance = null;
-      if(this.sectionName=='_top_'){
-        while(document.body.firstElementChild){
+      if (this.sectionName == '_top_') {
+        while (document.body.firstElementChild) {
           ko.removeNode(document.body.firstElementChild);
         }
       }
-      this._subViews.forEach((v)=>{
+      this._subViews.forEach((v) => {
         v.removeFromDOM();
       });
     }

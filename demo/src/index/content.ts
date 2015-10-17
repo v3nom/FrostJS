@@ -1,6 +1,7 @@
 module App.Page.Index {
   export class Content extends Frost.Section {
     content = ko.observable('Contento2');
+    timerId;
 
     constructor() {
       super();
@@ -10,11 +11,16 @@ module App.Page.Index {
       Frost.Routing.navigate('settings', null);
     }
 
-    sectionCreate(){
+    sectionCreate() {
       console.log('content section create');
+      this.timerId = setInterval(() => {
+        var c = this.content();
+        this.content(c + '1');
+      }, 1000);
     }
-    sectionRemove(){
+    sectionRemove() {
       console.log('content section remove');
+      clearInterval(this.timerId);
     }
   }
 }

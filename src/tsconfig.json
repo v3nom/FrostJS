@@ -11,16 +11,17 @@
         "./**/*.ts"
     ],
     "files": [
-        "./assetManager.ts",
-        "./event.ts",
-        "./frost.ts",
-        "./routing/history.ts",
-        "./routing/matcher.ts",
-        "./routing/navigation.ts",
-        "./routing/route.ts",
-        "./typed/es6.d.ts",
-        "./typed/knockout.d.ts",
-        "./view/view.ts",
-        "./viewmodel.ts"
-    ]
+        "assetManager.ts",
+        "event.ts",
+        "frost.ts",
+        "routing/history.ts",
+        "routing/matcher.ts",
+        "routing/navigation.ts",
+        "routing/route.ts",
+        "typed/es6.d.ts",
+        "typed/knockout.d.ts",
+        "view/view.ts",
+        "viewmodel.ts"
+    ],
+    "exclude": []
 }

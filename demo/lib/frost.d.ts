@@ -45,12 +45,13 @@ declare module Frost {
         viewPath: string;
         viewModelConstructor: any;
         sectionName: string;
+        private _id;
         private _viewContent;
         private _subViews;
         private _viewModelInstance;
         constructor(viewPath: string, viewModelConstructor: Function, subViews?: any);
         prepareForRender(): any;
-        renderToDOM(parent: Element | DocumentFragment, top?: any): void;
+        renderToDOM(parent: HTMLElement): void;
         removeFromDOM(): void;
         isSame(v: View): boolean;
     }

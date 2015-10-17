@@ -52,6 +52,10 @@ var Frost;
             });
         };
         EventHub.prototype.unsub = function (eventName, callback) {
+            var callbacks = this._getCallbacks(eventName);
+            this._subscriptions[eventName] = callbacks.filter(function (c) {
+                return c != callback;
+            });
         };
         EventHub.prototype.unsubscribeAll = function (eventName) {
         };
@@ -134,9 +138,9 @@ var Frost;
             var nextRoute = Frost.Routing.matchRoute(data.hash);
             if (nextRoute) {
                 var nextView = nextRoute.action();
-                if (activeView && nextView.isSame(activeView)) {
+                /*if (activeView && nextView.isSame(activeView)) {
                     return;
-                }
+                }*/
                 nextView.prepareForRender().then(function () {
                     if (activeView) {
                         activeView.removeFromDOM();
@@ -174,10 +178,12 @@ var Frost;
 })(Frost || (Frost = {}));
 var Frost;
 (function (Frost) {
+    var runningCounter = 1;
     var View = (function () {
         function View(viewPath, viewModelConstructor, subViews) {
             var _this = this;
             this.sectionName = '_top_';
+            this._id = runningCounter++;
             this.viewPath = viewPath;
             this.viewModelConstructor = viewModelConstructor;
             this._subViews = [];
@@ -191,7 +197,7 @@ var Frost;
                     else {
                         var vs = subViews['_'];
                         vs.forEach(function (globalView) {
-                            globalView.sectionName = '_';
+                            globalView.sectionName = 'external' + globalView._id;
                             _this._subViews.push(globalView);
                         });
                     }
@@ -209,23 +215,22 @@ var Frost;
                 return Promise.all(subViewAssets);
             });
         };
-        View.prototype.renderToDOM = function (parent, top) {
+        View.prototype.renderToDOM = function (parent) {
+            var _this = this;
             // Create view fragment
-            var range = document.createRange();
-            range.setStart(document.body, 0);
-            var fragment = range.createContextualFragment(this._viewContent);
+            var content = this._viewContent;
             var holder = null;
             // find out holder
-            if (this.sectionName == '_') {
-                holder = top.children[0];
-                var koStartComment = document.createComment('ko stopBinding: true');
-                var koEndComment = document.createComment('/ko');
-                fragment.insertBefore(koStartComment, fragment.childNodes[0]);
-                fragment.appendChild(koEndComment);
+            if (this.sectionName.indexOf('external') == 0) {
+                content = '<!-- ko stopBinding: true -->' + content + '<!-- /ko -->';
+                holder = parent.childNodes[0];
+                holder.innerHTML += content;
+                holder.lastElementChild.dataset.frostView = this.sectionName;
             }
             else if (this.sectionName == '_top_') {
-                holder = parent;
-                top = fragment;
+                parent.innerHTML = content;
+                holder = parent.firstChild;
+                holder.dataset['frostView'] = this.sectionName;
             }
             else {
                 holder = parent.querySelector('[data-frost-view="' + this.sectionName + '"]');
@@ -238,21 +243,22 @@ var Frost;
                     existingBindings = stopBinding;
                 }
                 holder.dataset.bind = existingBindings;
+                holder.innerHTML = content;
             }
             // Render sub views first
             this._subViews.forEach(function (subView) {
-                subView.renderToDOM(fragment, top);
+                subView.renderToDOM(parent);
             });
             this._viewModelInstance.sectionCreate();
-            // Insert self to parent
-            holder.appendChild(fragment);
-            // Apply bindings
-            if (this.sectionName == '_' || this.sectionName == '_top_') {
-                ko.applyBindings(this._viewModelInstance, holder.lastElementChild);
-            }
-            else {
-                ko.applyBindingsToDescendants(this._viewModelInstance, holder);
-            }
+            setTimeout(function () {
+                var target = document.querySelector('[data-frost-view="' + _this.sectionName + '"]');
+                if (_this.sectionName == '_top_' || _this.sectionName.indexOf('external') == 0) {
+                    ko.applyBindings(_this._viewModelInstance, target);
+                }
+                else {
+                    ko.applyBindingsToDescendants(_this._viewModelInstance, target);
+                }
+            });
         };
         View.prototype.removeFromDOM = function () {
             this._viewModelInstance.sectionRemove();

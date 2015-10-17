@@ -8,14 +8,15 @@
         "./**/*.ts"
     ],
     "files": [
-        "./lib/es6.d.ts",
-        "./lib/frost.d.ts",
-        "./lib/knockout.d.ts",
-        "./src/index/content.ts",
-        "./src/index/header.ts",
-        "./src/index/page.ts",
-        "./src/main.ts",
-        "./src/settings/settings.ts",
-        "./src/sidepanel/panel.ts"
-    ]
+        "lib/es6.d.ts",
+        "lib/frost.d.ts",
+        "lib/knockout.d.ts",
+        "src/index/content.ts",
+        "src/index/header.ts",
+        "src/index/page.ts",
+        "src/main.ts",
+        "src/settings/settings.ts",
+        "src/sidepanel/panel.ts"
+    ],
+    "exclude": []
 }

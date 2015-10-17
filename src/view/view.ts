@@ -74,15 +74,18 @@ module Frost {
       this._subViews.forEach((subView) => {
         subView.renderToDOM(parent);
       });
+    }
 
+    applyBindings(){
       this._viewModelInstance.sectionCreate();
-      setTimeout(() => {
-        var target = document.querySelector('[data-frost-view="' + this.sectionName + '"]');
-        if (this.sectionName == '_top_' || this.sectionName.indexOf('external') == 0) {
-          ko.applyBindings(this._viewModelInstance, target);
-        } else {
-          ko.applyBindingsToDescendants(this._viewModelInstance, target);
-        }
+      var target = document.querySelector('[data-frost-view="' + this.sectionName + '"]');
+      if (this.sectionName == '_top_' || this.sectionName.indexOf('external') == 0) {
+        ko.applyBindings(this._viewModelInstance, target);
+      } else {
+        ko.applyBindingsToDescendants(this._viewModelInstance, target);
+      }
+      this._subViews.forEach((v)=>{
+        v.applyBindings();
       });
     }
 

@@ -52,6 +52,7 @@ declare module Frost {
         constructor(viewPath: string, viewModelConstructor: Function, subViews?: any);
         prepareForRender(): any;
         renderToDOM(parent: HTMLElement): void;
+        applyBindings(): void;
         removeFromDOM(): void;
         isSame(v: View): boolean;
     }

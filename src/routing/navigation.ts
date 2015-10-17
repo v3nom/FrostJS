@@ -19,6 +19,7 @@ module Frost.Routing {
                 }
                 activeView = nextView;
                 activeView.renderToDOM(document.body);
+                activeView.applyBindings();
             });
         } else {
             console.error('No route matched');

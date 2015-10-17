@@ -153,6 +153,7 @@ var Frost;
                     }
                     activeView = nextView;
                     activeView.renderToDOM(document.body);
+                    activeView.applyBindings();
                 });
             }
             else {
@@ -216,7 +217,6 @@ var Frost;
             });
         };
         View.prototype.renderToDOM = function (parent) {
-            var _this = this;
             // Create view fragment
             var content = this._viewContent;
             var holder = null;
@@ -249,15 +249,18 @@ var Frost;
             this._subViews.forEach(function (subView) {
                 subView.renderToDOM(parent);
             });
+        };
+        View.prototype.applyBindings = function () {
             this._viewModelInstance.sectionCreate();
-            setTimeout(function () {
-                var target = document.querySelector('[data-frost-view="' + _this.sectionName + '"]');
-                if (_this.sectionName == '_top_' || _this.sectionName.indexOf('external') == 0) {
-                    ko.applyBindings(_this._viewModelInstance, target);
-                }
-                else {
-                    ko.applyBindingsToDescendants(_this._viewModelInstance, target);
-                }
+            var target = document.querySelector('[data-frost-view="' + this.sectionName + '"]');
+            if (this.sectionName == '_top_' || this.sectionName.indexOf('external') == 0) {
+                ko.applyBindings(this._viewModelInstance, target);
+            }
+            else {
+                ko.applyBindingsToDescendants(this._viewModelInstance, target);
+            }
+            this._subViews.forEach(function (v) {
+                v.applyBindings();
             });
         };
         View.prototype.removeFromDOM = function () {

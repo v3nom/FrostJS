@@ -32,10 +32,10 @@ module Frost {
       }
     }
 
-    prepareForRender() {
-      this._viewModelInstance = new this.viewModelConstructor();
+    prepareForRender(pageId:string) {
+      this._viewModelInstance = new this.viewModelConstructor(pageId);
       var subViewAssets = this._subViews.map((subView) => {
-        return subView.prepareForRender();
+        return subView.prepareForRender(pageId);
       });
       return Frost.AssetManager.getAsset(this.viewPath).then((asset: string) => {
         this._viewContent = asset;

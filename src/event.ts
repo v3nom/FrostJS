@@ -33,7 +33,7 @@ module Frost {
     }
 
     unsubscribeAll(eventName: string) {
-
+      this._subscriptions[eventName] = [];
     }
 
     schedule() {

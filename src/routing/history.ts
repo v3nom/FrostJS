@@ -19,9 +19,11 @@ module Frost.Routing {
     }
 
     export function startTracking() {
-        window.addEventListener('popstate', (event) => {
-            handleHistoryChange();
-        });
         handleHistoryChange();
+        setTimeout(()=>{
+          window.addEventListener('popstate', (event) => {
+              handleHistoryChange();
+          });
+        });
     }
 }

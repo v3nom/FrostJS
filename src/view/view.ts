@@ -32,9 +32,9 @@ module Frost {
       }
     }
 
-    prepareForRender(pageId:string) {
+    prepareForRender(pageId:string):Promise<any> {
       this._viewModelInstance = new this.viewModelConstructor(pageId);
-      var subViewAssets = this._subViews.map((subView) => {
+      var subViewAssets:any = this._subViews.map((subView) => {
         return subView.prepareForRender(pageId);
       });
       return Frost.AssetManager.getAsset(this.viewPath).then((asset: string) => {

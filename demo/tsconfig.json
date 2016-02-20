@@ -9,6 +9,7 @@
     ],
     "files": [
         "./lib/es6.d.ts",
+        "./lib/frost.d.ts",
         "./lib/knockout.d.ts",
         "./src/index/content.ts",
         "./src/index/header.ts",

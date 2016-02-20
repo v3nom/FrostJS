@@ -5,7 +5,7 @@
         "declaration": true,
         "noLib": false,
         "preserveConstEnums": true,
-        "out": "../demo/lib/frost.js"
+        "out": "../dist/frost.js"
     },
     "filesGlob": [
         "./**/*.ts"
